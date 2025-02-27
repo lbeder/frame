@@ -34,6 +34,10 @@ class RequestCommand extends React.Component {
     link.rpc('approveRequest', req, () => {}) // Move to link.send
   }
 
+  approveOnly(reqId, req) {
+    link.rpc('approveOnlyRequest', req, () => {}) // Move to link.send
+  }
+
   decline(req) {
     link.rpc('declineRequest', req, () => {}) // Move to link.send
   }
@@ -80,110 +84,163 @@ class RequestCommand extends React.Component {
       displayStatus = 'waiting for block'
     }
 
+    let res = null
+    let progress = null
+
+    if (req && req.tx) {
+      if (req.tx.hash) {
+        res = this.state.txHashCopied ? (
+          <div className='txActionButtonsRow'>
+            <div className={'txActionText'}>Transaction Hash Copied</div>
+          </div>
+        ) : this.state.showHashDetails || status === 'confirming' ? (
+          <div className='txActionButtonsRow'>
+            <div
+              className={`txActionButton${explorer ? '' : ' txActionButtonDisabled'}`}
+              onClick={() => {
+                if (explorer && req && req.tx && req.tx.hash) {
+                  if (this.store('main.mute.explorerWarning')) {
+                    link.send('tray:openExplorer', chain, req.tx.hash)
+                  } else {
+                    this.store.notify('openExplorer', { hash: req.tx.hash, chain: chain })
+                  }
+                }
+              }}
+            >
+              Open Explorer
+            </div>
+            <div
+              className={'txActionButton'}
+              onClick={() => {
+                if (req && req.tx && req.tx.hash) {
+                  link.send('tray:copyTxHash', req.tx.hash)
+                  this.setState({ txHashCopied: true, showHashDetails: false })
+                  setTimeout(() => {
+                    this.setState({ txHashCopied: false })
+                  }, 3000)
+                }
+              }}
+            >
+              Copy Hash
+            </div>
+          </div>
+        ) : (
+          <div className='txActionButtonsRow'>
+            <div
+              className='txActionButton txActionButtonBad'
+              onClick={() => {
+                link.send('tray:replaceTx', req.handlerId, 'cancel')
+              }}
+            >
+              Cancel
+            </div>
+            <div
+              className={'txActionButton'}
+              onClick={() => {
+                this.setState({ showHashDetails: true })
+              }}
+            >
+              View Details
+            </div>
+            <div
+              className='txActionButton txActionButtonGood'
+              onClick={() => {
+                link.send('tray:replaceTx', req.handlerId, 'speed')
+              }}
+            >
+              Speed Up
+            </div>
+          </div>
+        )
+
+        progress = (
+          <div>
+            <div className={success ? 'txProgressSuccess' : 'txProgressSuccess txProgressHidden'}>
+              {req.tx.receipt ? (
+                <>
+                  <div className='txProgressSuccessItem txProgressSuccessItemLeft'>
+                    <div className='txProgressSuccessItemLabel'>In Block</div>
+                    <div className='txProgressSuccessItemValue'>
+                      {parseInt(req.tx.receipt.blockNumber, 'hex')}
+                    </div>
+                  </div>
+                  <Time time={req.completed} />
+                  <div className='txProgressSuccessItem txProgressSuccessItemCenter'>
+                    <div className='txProgressSuccessItemLabel'>Fee</div>
+                    <div className='txProgressSuccessItemValue'>
+                      <div style={{ margin: '0px 1px 0px 0px', fontSize: '10px' }}>$</div>
+                      {feeAtTime || '?.??'}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+            <div className={'requestNoticeInnerText'} style={{ marginTop: '-30px' }}>
+              {displayStatus}
+            </div>
+            {isCancelableRequest(status) && (
+              <div className='cancelRequest' onClick={() => this.decline(req)}>
+                Cancel
+              </div>
+            )}
+          </div>
+        )
+      } else if (req.tx.signature) {
+        res = this.state.txSignatureCopied ? (
+          <div className='txActionButtonsRow'>
+            <div className={'txActionText'}>Transaction Signature Copied</div>
+          </div>
+        ) : (
+          <div className='txActionButtonsRow'>
+            <div
+              className={'txActionButton'}
+              onClick={() => {
+                link.send('tray:copyTxSignature', req.tx.signature)
+                this.setState({ txSignatureCopied: true })
+                setTimeout(() => {
+                  this.setState({ txSignatureCopied: false })
+                }, 3000)
+              }}
+            >
+              Copy Signature
+            </div>
+
+            <div className='txActionButton' onClick={() => this.decline(req)}>
+              Finish
+            </div>
+          </div>
+        )
+
+        progress = (
+          <div>
+            <div className={'requestNoticeInnerText'} style={{ marginTop: '-30px' }}>
+              {displayStatus}
+            </div>
+          </div>
+        )
+      }
+    }
+
     return (
       <div>
-        <div className={req && req.tx && req.tx.hash ? 'requestFooter requestFooterActive' : 'requestFooter'}>
+        <div
+          className={
+            req && req.tx && (req.tx.hash || req.tx.signature)
+              ? 'requestFooter requestFooterActive'
+              : 'requestFooter'
+          }
+        >
           <div
             className='txActionButtons'
             onMouseLeave={() => {
               this.setState({ showHashDetails: false })
             }}
           >
-            {req && req.tx && req.tx.hash ? (
-              this.state.txHashCopied ? (
-                <div className='txActionButtonsRow'>
-                  <div className={'txActionText'}>Transaction Hash Copied</div>
-                </div>
-              ) : this.state.showHashDetails || status === 'confirming' ? (
-                <div className='txActionButtonsRow'>
-                  <div
-                    className={`txActionButton${explorer ? '' : ' txActionButtonDisabled'}`}
-                    onClick={() => {
-                      if (explorer && req && req.tx && req.tx.hash) {
-                        if (this.store('main.mute.explorerWarning')) {
-                          link.send('tray:openExplorer', chain, req.tx.hash)
-                        } else {
-                          this.store.notify('openExplorer', { hash: req.tx.hash, chain: chain })
-                        }
-                      }
-                    }}
-                  >
-                    Open Explorer
-                  </div>
-                  <div
-                    className={'txActionButton'}
-                    onClick={() => {
-                      if (req && req.tx && req.tx.hash) {
-                        link.send('tray:copyTxHash', req.tx.hash)
-                        this.setState({ txHashCopied: true, showHashDetails: false })
-                        setTimeout(() => {
-                          this.setState({ txHashCopied: false })
-                        }, 3000)
-                      }
-                    }}
-                  >
-                    Copy Hash
-                  </div>
-                </div>
-              ) : (
-                <div className='txActionButtonsRow'>
-                  <div
-                    className='txActionButton txActionButtonBad'
-                    onClick={() => {
-                      link.send('tray:replaceTx', req.handlerId, 'cancel')
-                    }}
-                  >
-                    Cancel
-                  </div>
-                  <div
-                    className={'txActionButton'}
-                    onClick={() => {
-                      this.setState({ showHashDetails: true })
-                    }}
-                  >
-                    View Details
-                  </div>
-                  <div
-                    className='txActionButton txActionButtonGood'
-                    onClick={() => {
-                      link.send('tray:replaceTx', req.handlerId, 'speed')
-                    }}
-                  >
-                    Speed Up
-                  </div>
-                </div>
-              )
-            ) : null}
+            {res}
           </div>
         </div>
-        <div className={success ? 'txProgressSuccess' : 'txProgressSuccess txProgressHidden'}>
-          {req && req.tx && req.tx.receipt ? (
-            <>
-              <div className='txProgressSuccessItem txProgressSuccessItemLeft'>
-                <div className='txProgressSuccessItemLabel'>In Block</div>
-                <div className='txProgressSuccessItemValue'>
-                  {parseInt(req.tx.receipt.blockNumber, 'hex')}
-                </div>
-              </div>
-              <Time time={req.completed} />
-              <div className='txProgressSuccessItem txProgressSuccessItemCenter'>
-                <div className='txProgressSuccessItemLabel'>Fee</div>
-                <div className='txProgressSuccessItemValue'>
-                  <div style={{ margin: '0px 1px 0px 0px', fontSize: '10px' }}>$</div>
-                  {feeAtTime || '?.??'}
-                </div>
-              </div>
-            </>
-          ) : null}
-        </div>
-        <div className={'requestNoticeInnerText'} style={{ marginTop: '-30px' }}>
-          {displayStatus}
-        </div>
-        {isCancelableRequest(status) && (
-          <div className='cancelRequest' onClick={() => this.decline(req)}>
-            Cancel
-          </div>
-        )}
+
+        {progress}
       </div>
     )
   }
@@ -240,6 +297,7 @@ class RequestCommand extends React.Component {
               <span>Decline</span>
             </div>
           </div>
+
           <div
             className={this.state.signerLocked ? 'requestSign headShake' : 'requestSign'}
             onClick={() => {
@@ -282,6 +340,52 @@ class RequestCommand extends React.Component {
                 </span>
               ) : (
                 <span>Sign</span>
+              )}
+            </div>
+          </div>
+
+          <div
+            className={this.state.signerLocked ? 'requestSignOnly headShake' : 'requestSignOnly'}
+            onClick={() => {
+              if (this.state.allowInput) {
+                link.rpc('signerCompatibility', req.handlerId, (e, compatibility) => {
+                  if (e === 'No signer') {
+                    this.store.notify('noSignerWarning', { req })
+                  } else if (e === 'Signer unavailable') {
+                    this.setState({ signerLocked: true })
+                    setTimeout(() => {
+                      this.setState({ signerLocked: false })
+                    }, 3000)
+                  } else if (
+                    !compatibility.compatible &&
+                    !this.store('main.mute.signerCompatibilityWarning')
+                  ) {
+                    this.store.notify('signerCompatibilityWarning', { req, compatibility, chain: chain })
+                  } else if (
+                    (maxFeeUSD.toNumber() > FEE_WARNING_THRESHOLD_USD ||
+                      this.toDisplayUSD(maxFeeUSD) === '0.00') &&
+                    !this.store('main.mute.gasFeeWarning')
+                  ) {
+                    this.store.notify('gasFeeWarning', {
+                      req,
+                      feeUSD: this.toDisplayUSD(maxFeeUSD),
+                      currentSymbol
+                    })
+                  } else {
+                    this.approveOnly(req.handlerId, req)
+                  }
+                })
+              }
+            }}
+          >
+            <div className='requestSignButton _txButton'>
+              {this.state.signerLocked ? (
+                <span style={{ display: 'flex' }}>
+                  <span>{svg.sign(19)}</span>
+                  <span>{svg.lock(13)}</span>
+                </span>
+              ) : (
+                <span>Sign Only</span>
               )}
             </div>
           </div>

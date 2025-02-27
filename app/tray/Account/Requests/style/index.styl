@@ -1221,7 +1221,7 @@
     position absolute
     top 4px
     left 4px
-    right calc(50% - 1px)
+    right calc(66% - 1px)
     bottom 4px
     z-index 40
     text-transform uppercase
@@ -1267,11 +1267,31 @@
   .requestSign
     position absolute
     top 4px
-    right 4px
-    left calc(50% - 1px)
+    right calc(33% + 1px)
+    left calc(33% + 1px)
     bottom 4px
     z-index 40
     text-transform uppercase
+
+  .requestSignOnly
+    position absolute
+    top 4px
+    right 4px
+    left calc(66% - 1px)
+    bottom 4px
+    z-index 40
+    text-transform uppercase
+
+    .requestSignButton:before
+      content ''
+      position absolute
+      margin-left -1px
+      height 4px
+      border-radius 2px
+      width 30px
+      background var(--warning)
+      bottom 26px
+      z-index 98
 
   .requestSignButton
     position absolute

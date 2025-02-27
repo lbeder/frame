@@ -924,6 +924,30 @@ export class Accounts extends EventEmitter {
     }
   }
 
+  setRequestOnlySuccess(handlerId: string, signature: string) {
+    log.info('setRequestOnlySuccess', handlerId)
+
+    const currentAccount = this.current()
+    if (currentAccount && currentAccount.requests[handlerId]) {
+      currentAccount.requests[handlerId].status = RequestStatus.Success
+      currentAccount.requests[handlerId].notice = 'Successful'
+
+      if (currentAccount.requests[handlerId].type === 'transaction') {
+        currentAccount.requests[handlerId].mode = RequestMode.Normal
+      } else {
+        setTimeout(
+          () => this.accounts[currentAccount.address] && this.removeRequest(currentAccount, handlerId),
+          3300
+        )
+      }
+
+      const txRequest = this.getTransactionRequest(currentAccount, handlerId)
+      txRequest.tx = { signature, confirmations: 0 }
+
+      currentAccount.update()
+    }
+  }
+
   clearRequestsByOrigin(address: string, origin: string) {
     if (address && origin) {
       const account = this.accounts[address]

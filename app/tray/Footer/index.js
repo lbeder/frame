@@ -39,6 +39,9 @@ class Footer extends React.Component {
   approve(reqId, req) {
     link.rpc('approveRequest', req, () => {}) // Move to link.send
   }
+  approveOnly(reqId, req) {
+    link.rpc('approveOnlyRequest', req, () => {}) // Move to link.send
+  }
   decline(reqId, req) {
     link.rpc('declineRequest', req, () => {}) // Move to link.send
   }

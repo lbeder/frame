@@ -110,6 +110,7 @@ export interface TransactionRequest extends AccountRequest<'transaction'> {
     receipt?: TransactionReceipt
     hash?: string
     confirmations: number
+    signature?: string
   }
   approvals: Approval[]
   locked?: boolean

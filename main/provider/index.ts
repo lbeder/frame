@@ -386,6 +386,38 @@ export class Provider extends EventEmitter {
     }
   }
 
+  signOnly(req: TransactionRequest, cb: Callback<string>) {
+    const rawTx = req.data
+    const res = (data: any) => {
+      if (this.handlers[req.handlerId]) this.handlers[req.handlerId](data)
+      delete this.handlers[req.handlerId]
+    }
+
+    const payload = req.payload
+    const maxTotalFee = maxFee(rawTx)
+
+    if (feeTotalOverMax(rawTx, maxTotalFee)) {
+      const chainId = parseInt(rawTx.chainId)
+      const symbol = store(`main.networks.ethereum.${chainId}.symbol`)
+      const displayAmount = symbol ? ` (${Math.floor(maxTotalFee / 1e18)} ${symbol})` : ''
+
+      const err = `Max fee is over hard limit${displayAmount}`
+
+      resError(err, payload, res)
+      cb(new Error(err))
+    } else {
+      accounts.signTransaction(rawTx, (err, signedTx) => {
+        // Sign Transaction
+        if (err) {
+          resError(err, payload, res)
+          cb(err)
+        } else {
+          cb(null, signedTx)
+        }
+      })
+    }
+  }
+
   approveTransactionRequest(req: TransactionRequest, cb: Callback<string>) {
     const signAndSend = (requestToSign: TransactionRequest) => {
       // remove callback from logging
@@ -413,6 +445,40 @@ export class Provider extends EventEmitter {
 
       if (updatedReq) {
         signAndSend(updatedReq)
+      } else {
+        log.error(`could not find request with handlerId="${req.handlerId}"`)
+        cb(new Error('could not find request'))
+      }
+    })
+  }
+
+  approveOnlyTransactionRequest(req: TransactionRequest, cb: Callback<string>) {
+    const signOnly = (requestToSign: TransactionRequest) => {
+      // remove callback from logging
+      const { res, ...txToLog } = requestToSign
+      log.info('approveOnlyTransactionRequest', txToLog)
+
+      this.signOnly(requestToSign, cb)
+    }
+
+    accounts.lockRequest(req.handlerId)
+
+    if (req.data.nonce) return signOnly(req)
+
+    this.getNonce(req.data, (response) => {
+      if (response.error) {
+        if (this.handlers[req.handlerId]) {
+          this.handlers[req.handlerId](response)
+          delete this.handlers[req.handlerId]
+        }
+
+        return cb(new Error(response.error.message))
+      }
+
+      const updatedReq = accounts.updateNonce(req.handlerId, response.result)
+
+      if (updatedReq) {
+        signOnly(updatedReq)
       } else {
         log.error(`could not find request with handlerId="${req.handlerId}"`)
         cb(new Error('could not find request'))

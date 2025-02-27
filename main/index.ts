@@ -181,6 +181,10 @@ ipcMain.on('tray:copyTxHash', (e, hash) => {
   if (hash) clipboard.writeText(hash)
 })
 
+ipcMain.on('tray:copyTxSignature', (e, signature) => {
+  if (signature) clipboard.writeText(signature)
+})
+
 ipcMain.on('tray:giveAccess', (e, req, access) => {
   accounts.setAccess(req, access)
 })

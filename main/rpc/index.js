@@ -162,6 +162,16 @@ const rpc = {
       })
     }
   },
+  approveOnlyRequest(req) {
+    accounts.setRequestPending(req)
+    if (req.type === 'transaction') {
+      provider.approveOnlyTransactionRequest(req, (err, res) => {
+        if (err) return accounts.setRequestError(req.handlerId, err)
+
+        accounts.setRequestOnlySuccess(req.handlerId, res)
+      })
+    }
+  },
   declineRequest(req) {
     if (req.type === 'transaction' || isSignatureRequest(req)) {
       accounts.declineRequest(req.handlerId)
