@@ -48,7 +48,7 @@ describe('#deriveAddresses', () => {
     const ethApp = await createEthApp(replayData)
     const addresses = await ethApp.deriveAddresses(Derivation.legacy)
 
-    expect(addresses.length).toBe(100)
+    expect(addresses.length).toBe(400)
     expect(addresses[0].toLowerCase()).toBe('0x46bdba9c90ea453426d0b8d4a7a8a99b8a9dade5')
   }, 200)
 
@@ -61,7 +61,7 @@ describe('#deriveAddresses', () => {
     const ethApp = await createEthApp(replayData)
     const addresses = await ethApp.deriveAddresses(Derivation.standard)
 
-    expect(addresses.length).toBe(100)
+    expect(addresses.length).toBe(400)
     expect(addresses[5].toLowerCase()).toBe('0xe001da2733a5dc2ce5191de0534282683f05f0b8')
   }, 200)
 
@@ -74,7 +74,7 @@ describe('#deriveAddresses', () => {
     const ethApp = await createEthApp(replayData)
     const addresses = await ethApp.deriveAddresses(Derivation.testnet)
 
-    expect(addresses.length).toBe(100)
+    expect(addresses.length).toBe(400)
     expect(addresses[3].toLowerCase()).toBe('0xaffb4ca2ed8738dd409b7563052b3e7c7bdaabdb')
   }, 200)
 
