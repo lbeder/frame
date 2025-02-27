@@ -20,7 +20,7 @@ export function deriveHDAccounts(publicKey: string, chainCode: string, cb: Callb
       return toChecksumAddress(`0x${address.toString('hex')}`)
     }
     const accounts = []
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 400; i++) {
       accounts[i] = derive(i)
     }
 
