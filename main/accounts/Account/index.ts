@@ -9,7 +9,6 @@ import {
   SignTypedDataRequest,
   TransactionRequest
 } from '..'
-import nebulaApi from '../../nebula'
 import signers from '../../signers'
 import windows from '../../windows'
 import nav from '../../windows/nav'
@@ -27,8 +26,6 @@ import Erc20Contract from '../../contracts/erc20'
 import type { PermitSignatureRequest, TypedMessage } from '../types'
 import type { Permission } from '../../store/state'
 
-const nebula = nebulaApi()
-
 const storeApi = {
   getPermissions: function (address: Address) {
     return (store('main.permissions', address) || {}) as Record<string, Permission>
@@ -42,7 +39,6 @@ interface SignerOptions {
 interface AccountOptions {
   address?: Address
   name: string
-  ensName?: string
   created?: string
   lastSignerType?: SignerType
   active: boolean
@@ -53,7 +49,6 @@ class FrameAccount {
   id: Address
   address: Address
   name: string
-  ensName?: string
   created: string
 
   lastSignerType: SignerType
@@ -69,7 +64,7 @@ class FrameAccount {
   active = false
 
   constructor(params: AccountOptions, accounts: Accounts) {
-    const { lastSignerType, name, ensName, created, address, active, options = {} } = params
+    const { lastSignerType, name, created, address, active, options = {} } = params
     this.accounts = accounts // Parent Accounts Module
 
     const formattedAddress = (address && address.toLowerCase()) || '0x'
@@ -79,7 +74,6 @@ class FrameAccount {
 
     this.active = active
     this.name = name
-    this.ensName = ensName
 
     this.created = created || `new:${Date.now()}`
 
@@ -146,24 +140,7 @@ class FrameAccount {
       })
     }
 
-    if (nebula.ready()) {
-      this.lookupAddress() // We need to recheck this on every network change...
-    } else {
-      nebula.once('ready', this.lookupAddress.bind(this))
-    }
-
     this.update()
-  }
-
-  async lookupAddress() {
-    try {
-      this.ensName = (await nebula.ens.reverseLookup(this.address))[0]
-      this.update()
-    } catch (e) {
-      log.error('lookupAddress Error:', e)
-      this.ensName = ''
-      this.update()
-    }
   }
 
   findSigner(address: Address) {
@@ -290,7 +267,6 @@ class FrameAccount {
         const knownTxRequest = this.requests[req.handlerId] as TransactionRequest
 
         if (recipient && knownTxRequest) {
-          knownTxRequest.recipient = recipient.ens
           this.update()
         }
       } catch (e) {
@@ -492,7 +468,6 @@ class FrameAccount {
         active: this.active,
         signer: this.signer,
         requests: this.requests,
-        ensName: this.ensName,
         created: this.created
       })
     ) as Account

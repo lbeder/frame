@@ -2,12 +2,11 @@ import log from 'electron-log'
 
 import ethProvider from 'eth-provider'
 
-import nebulaApi from '../../nebula'
 import defaultTokenList from './default-tokens.json'
 
 import type { Token } from '../../store/state'
 
-const TOKENS_ENS_DOMAIN = 'tokens.frame.eth'
+import { STATIC_TOKENS } from '../static'
 
 interface TokenSpec extends Token {
   extensions?: {
@@ -24,7 +23,6 @@ export default class TokenLoader {
   private nextLoad?: NodeJS.Timeout | null
 
   private readonly eth = ethProvider('frame', { origin: 'frame-internal', name: 'tokenLoader' })
-  private readonly nebula = nebulaApi(this.eth)
 
   constructor() {
     this.eth.setChain('0x1')
@@ -34,23 +32,24 @@ export default class TokenLoader {
     try {
       const updatedTokens = await this.fetchTokenList(timeout)
       log.info(`Fetched ${updatedTokens.length} tokens`)
-      this.tokens = updatedTokens
+      this.tokens = [...updatedTokens]
       log.info(`Updated token list to contain ${this.tokens.length} tokens`)
 
       this.nextLoad = setTimeout(() => this.loadTokenList(), 10 * 60_000)
     } catch (e) {
       log.warn('Could not fetch token list', e)
+
       this.nextLoad = setTimeout(() => this.loadTokenList(), 30_000)
     }
   }
 
   private async fetchTokenList(timeout: number) {
-    log.verbose(`Fetching tokens from ${TOKENS_ENS_DOMAIN}`)
+    log.verbose('Fetching tokens from a local DB')
 
     let timeoutHandle: NodeJS.Timeout | undefined
     const requestTimeout = new Promise<TokenSpec[]>((resolve, reject) => {
       timeoutHandle = setTimeout(() => {
-        reject(`Timeout fetching token list from ${TOKENS_ENS_DOMAIN}`)
+        reject('Timeout fetching token list from local DB')
       }, timeout)
     })
 
@@ -60,12 +59,7 @@ export default class TokenLoader {
   }
 
   private async resolveTokens() {
-    const tokenListRecord = await this.nebula.resolve(TOKENS_ENS_DOMAIN)
-    const tokenManifest: { tokens: TokenSpec[] } = await this.nebula.ipfs.getJson(
-      tokenListRecord.record.content
-    )
-
-    return tokenManifest.tokens
+    return STATIC_TOKENS
   }
 
   async start() {

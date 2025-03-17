@@ -30,7 +30,6 @@ class TxSending extends React.Component {
     }
 
     const address = req.data.to ? getAddress(req.data.to) : ''
-    const ensName = req.recipient && req.recipient.length < 25 ? req.recipient : ''
     const isTestnet = this.store('main.networks', this.props.chain.type, this.props.chain.id, 'isTestnet')
     const {
       nativeCurrency,
@@ -85,15 +84,12 @@ class TxSending extends React.Component {
                   }}
                 >
                   <div className='clusterAddress'>
-                    {ensName ? (
-                      <span className='clusterAddressRecipient'>{ensName}</span>
-                    ) : (
-                      <span className='clusterAddressRecipient'>
-                        {address.substring(0, 8)}
-                        {svg.octicon('kebab-horizontal', { height: 15 })}
-                        {address.substring(address.length - 6)}
-                      </span>
-                    )}
+                    <span className='clusterAddressRecipient'>
+                      {address.substring(0, 8)}
+                      {svg.octicon('kebab-horizontal', { height: 15 })}
+                      {address.substring(address.length - 6)}
+                    </span>
+
                     <div className='clusterAddressRecipientFull'>
                       {this.state.copied ? (
                         <span>{'Address Copied'}</span>

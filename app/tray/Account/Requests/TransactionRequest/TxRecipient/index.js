@@ -24,7 +24,6 @@ class TxRecipient extends React.Component {
   render() {
     const req = this.props.req
     const address = req.data.to ? getAddress(req.data.to) : ''
-    const ensName = req.recipient && req.recipient.length < 25 ? req.recipient : ''
     const value = req.data.value || '0x'
     if (req.recipientType !== 'contract' && (value !== '0x' || parseInt(value, 16)) !== 0) return null
 
@@ -40,15 +39,12 @@ class TxRecipient extends React.Component {
               }}
             >
               <div className='clusterAddress'>
-                {ensName ? (
-                  <span className='clusterAddressRecipient'>{ensName}</span>
-                ) : (
-                  <span className='clusterAddressRecipient'>
-                    {address.substring(0, 8)}
-                    {svg.octicon('kebab-horizontal', { height: 15 })}
-                    {address.substring(address.length - 6)}
-                  </span>
-                )}
+                <span className='clusterAddressRecipient'>
+                  {address.substring(0, 8)}
+                  {svg.octicon('kebab-horizontal', { height: 15 })}
+                  {address.substring(address.length - 6)}
+                </span>
+
                 <div className='clusterAddressRecipientFull'>
                   {this.state.copied ? (
                     <span>{'Address Copied'}</span>

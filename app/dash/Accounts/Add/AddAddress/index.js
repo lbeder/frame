@@ -4,8 +4,6 @@ import Restore from 'react-restore'
 import link from '../../../../../resources/link'
 import RingIcon from '../../../../../resources/Components/RingIcon'
 
-const isEnsName = (input) => input.toLowerCase().includes('.eth')
-
 class AddAddress extends React.Component {
   constructor(...args) {
     super(...args)
@@ -14,17 +12,13 @@ class AddAddress extends React.Component {
       adding: false,
       address: '',
       status: '',
-      error: false,
-      resolvingEnsName: false
+      error: false
     }
 
     this.forms = [React.createRef(), React.createRef()]
-    this.cancelEnsResolution = () => {}
   }
 
-  componentWillUnmount() {
-    this.cancelEnsResolution()
-  }
+  componentWillUnmount() {}
 
   onChange(key, e) {
     e.preventDefault()
@@ -59,22 +53,6 @@ class AddAddress extends React.Component {
     this.focusActive()
   }
 
-  async resolveEnsName(name) {
-    return new Promise((resolve, reject) => {
-      this.cancelEnsResolution = () => reject({ canceled: true })
-
-      link.rpc('resolveEnsName', name, (err, resolvedAddress) => {
-        if (err) return reject({ canceled: false, message: `Unable to resolve Ethereum address for ${name}` })
-
-        resolve(resolvedAddress)
-      })
-    })
-  }
-
-  setResolving() {
-    this.setState({ resolvingEnsName: true })
-  }
-
   setError(status) {
     this.setState({ status, error: true })
   }
@@ -97,26 +75,11 @@ class AddAddress extends React.Component {
       return this.createFromAddress(address)
     }
 
-    if (!isEnsName(input)) {
-      return create(input)
-    }
-
-    try {
-      this.setResolving()
-
-      const address = await this.resolveEnsName(input)
-      create(address)
-    } catch (e) {
-      if (!e.canceled) {
-        this.setError(e.message)
-        this.nextForm()
-      }
-    }
+    return create(input)
   }
 
   restart() {
-    this.cancelEnsResolution()
-    this.setState({ index: 0, adding: false, address: '', success: false, resolvingEnsName: false })
+    this.setState({ index: 0, adding: false, address: '', success: false })
 
     setTimeout(() => {
       this.setState({ status: '', error: false })
@@ -147,7 +110,7 @@ class AddAddress extends React.Component {
   }
 
   render() {
-    const { status, error, address, index: formIndex, resolvingEnsName } = this.state
+    const { status, error, address, index: formIndex } = this.state
 
     let itemClass = 'addAccountItem addAccountItemSmart addAccountItemAdding'
 
@@ -182,43 +145,27 @@ class AddAddress extends React.Component {
             >
               <div className='addAccountItemOptionSetupFrames'>
                 <div className='addAccountItemOptionSetupFrame'>
-                  {!resolvingEnsName ? (
-                    <>
-                      <label htmlFor='addressInput' role='label' className='addAccountItemOptionTitle'>
-                        input address or ENS name
-                      </label>
-                      <div className='addAccountItemOptionInput address'>
-                        <input
-                          autoFocus
-                          id='addressInput'
-                          tabIndex='-1'
-                          value={address}
-                          ref={this.forms[0]}
-                          onChange={(e) => this.onChange('address', e)}
-                          onFocus={(e) => this.onFocus('address', e)}
-                          onBlur={(e) => this.onBlur('address', e)}
-                          onKeyPress={(e) => this.keyPress(e)}
-                        />
-                      </div>
-                      <div role='button' className='addAccountItemOptionSubmit' onClick={() => this.create()}>
-                        Create
-                      </div>
-                    </>
-                  ) : (
-                    <div className='addAccountResolvingEns'>
-                      <div className='addAccountItemOptionTitle'>Resolving ENS Name</div>
-                      <div className='signerLoading'>
-                        <div className='signerLoadingLoader' />
-                      </div>
-                      <div
-                        role='button'
-                        className='addAccountItemOptionSubmit'
-                        onClick={() => this.restart()}
-                      >
-                        cancel
-                      </div>
+                  <>
+                    <label htmlFor='addressInput' role='label' className='addAccountItemOptionTitle'>
+                      input address
+                    </label>
+                    <div className='addAccountItemOptionInput address'>
+                      <input
+                        autoFocus
+                        id='addressInput'
+                        tabIndex='-1'
+                        value={address}
+                        ref={this.forms[0]}
+                        onChange={(e) => this.onChange('address', e)}
+                        onFocus={(e) => this.onFocus('address', e)}
+                        onBlur={(e) => this.onBlur('address', e)}
+                        onKeyPress={(e) => this.keyPress(e)}
+                      />
                     </div>
-                  )}
+                    <div role='button' className='addAccountItemOptionSubmit' onClick={() => this.create()}>
+                      Create
+                    </div>
+                  </>
                 </div>
 
                 <div className='addAccountItemOptionSetupFrame'>

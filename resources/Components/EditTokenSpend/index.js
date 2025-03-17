@@ -20,7 +20,7 @@ const isValidInput = (value, decimals) => {
   return !isNaN(value) && value > 0 && (!strValue.includes('.') || strValue.split('.')[1].length <= decimals)
 }
 
-const Details = ({ address, name }) => {
+const Details = ({ address }) => {
   const [showCopiedMessage, copyAddress] = useCopiedMessage(address)
 
   return (
@@ -33,17 +33,11 @@ const Details = ({ address, name }) => {
       >
         <div className='clusterAddress'>
           <span className='clusterAddressRecipient'>
-            {name ? (
-              <span className='clusterAddressRecipient' style={{ fontFamily: 'MainFont', fontWeight: '400' }}>
-                {name}
-              </span>
-            ) : (
-              <>
-                {address.substring(0, 8)}
-                {svg.octicon('kebab-horizontal', { height: 15 })}
-                {address.substring(address.length - 6)}
-              </>
-            )}
+            <>
+              {address.substring(0, 8)}
+              {svg.octicon('kebab-horizontal', { height: 15 })}
+              {address.substring(address.length - 6)}
+            </>
           </span>
           <div className='clusterAddressRecipientFull'>
             {showCopiedMessage ? (
@@ -124,8 +118,7 @@ const EditTokenSpend = ({
         <Cluster>
           <Details
             {...{
-              address: spender.address,
-              name: spender.ens
+              address: spender.address
             }}
           />
           <Description

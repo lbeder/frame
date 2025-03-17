@@ -40,7 +40,6 @@ class TxSending extends React.Component {
           symbol
         } = action.data || {}
         const address = getAddress(recipientAddress)
-        const ensName = recipientEns
 
         const isTestnet = this.store('main.networks', this.props.chain.type, this.props.chain.id, 'isTestnet')
         const rate = this.store('main.rates', contract)
@@ -87,15 +86,12 @@ class TxSending extends React.Component {
                     }}
                   >
                     <div className='clusterAddress'>
-                      {ensName ? (
-                        <span className='clusterAddressRecipient'>{ensName}</span>
-                      ) : (
-                        <span className='clusterAddressRecipient'>
-                          {address.substring(0, 8)}
-                          {svg.octicon('kebab-horizontal', { height: 15 })}
-                          {address.substring(address.length - 6)}
-                        </span>
-                      )}
+                      <span className='clusterAddressRecipient'>
+                        {address.substring(0, 8)}
+                        {svg.octicon('kebab-horizontal', { height: 15 })}
+                        {address.substring(address.length - 6)}
+                      </span>
+
                       <div className='clusterAddressRecipientFull'>
                         {this.state.copied ? (
                           <span>{'Address Copied'}</span>
@@ -114,11 +110,10 @@ class TxSending extends React.Component {
         const {
           amount,
           decimals,
-          spender: { address: recipientAddress, ens: spenderEns },
+          spender: { address: recipientAddress },
           symbol
         } = action.data || {}
         const address = recipientAddress
-        const ensName = spenderEns
         const value = new BigNumber(amount)
         const revoke = value.eq(0)
         const displayAmount = isUnlimited(this.state.amount)
@@ -175,15 +170,12 @@ class TxSending extends React.Component {
                     }}
                   >
                     <div className='clusterAddress'>
-                      {ensName ? (
-                        <span className='clusterAddressRecipient'>{ensName}</span>
-                      ) : (
-                        <span className='clusterAddressRecipient'>
-                          {address.substring(0, 8)}
-                          {svg.octicon('kebab-horizontal', { height: 15 })}
-                          {address.substring(address.length - 6)}
-                        </span>
-                      )}
+                      <span className='clusterAddressRecipient'>
+                        {address.substring(0, 8)}
+                        {svg.octicon('kebab-horizontal', { height: 15 })}
+                        {address.substring(address.length - 6)}
+                      </span>
+
                       <div className='clusterAddressRecipientFull'>
                         {this.state.copied ? (
                           <span>{'Address Copied'}</span>

@@ -211,22 +211,11 @@ class Account extends React.Component {
   }
 
   getAddressSize() {
-    const ensName = this.store('main.accounts', this.props.id, 'ensName')
-    if (ensName) {
-      if (ensName.length <= 13) {
-        return 17
-      } else {
-        let size = 17 - (ensName.length - 13)
-        if (size < 8) size = 8
-        return size
-      }
-    } else {
-      return 17
-    }
+    return 17
   }
 
   renderDetails() {
-    const { address, ensName } = this.store('main.accounts', this.props.id)
+    const { address } = this.store('main.accounts', this.props.id)
     const showLocal = this.store('main.showLocalNameWithENS')
     const formattedAddress = getAddress(address)
 
@@ -254,72 +243,45 @@ class Account extends React.Component {
         </div>
       )
     } else {
-      if (ensName && !showLocal) {
-        return (
-          <div className='signerDetails'>
-            <div
-              className='signerDetailsENSName'
-              onMouseOver={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
+      return (
+        <div className='signerDetails'>
+          <div className='signerDetailsName'>{this.props.name}</div>
+          <div
+            className='signerDetailsAddress'
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              this.setState({ addressHover: true })
+            }}
+            onMouseOver={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              this.addressTimeout = setTimeout(() => {
                 this.setState({ addressHover: true })
-              }}
-              onMouseLeave={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                this.setState({ addressHover: false, copied: false })
-              }}
-              style={{ fontSize: this.getAddressSize() + 'px' }}
-            >
-              {ensName}
-            </div>
+              }, 500)
+            }}
+            onMouseLeave={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              clearTimeout(this.addressTimeout)
+              this.setState({ addressHover: false, copied: false })
+            }}
+          >
+            <>
+              <div className='signerDetailsAddressPart'>{formattedAddress.substring(0, 5)}</div>
+              <div className='signerDetailsAddressDivide'>{svg.ellipsis(16)}</div>
+              <div className='signerDetailsAddressPart'>
+                {formattedAddress.substr(formattedAddress.length - 3)}
+              </div>
+            </>
           </div>
-        )
-      } else {
-        return (
-          <div className='signerDetails'>
-            <div className='signerDetailsName'>{this.props.name}</div>
-            <div
-              className='signerDetailsAddress'
-              onClick={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                this.setState({ addressHover: true })
-              }}
-              onMouseOver={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                this.addressTimeout = setTimeout(() => {
-                  this.setState({ addressHover: true })
-                }, 500)
-              }}
-              onMouseLeave={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                clearTimeout(this.addressTimeout)
-                this.setState({ addressHover: false, copied: false })
-              }}
-            >
-              {ensName ? (
-                <div className='signerDetailsAddressPart'>{ensName}</div>
-              ) : (
-                <>
-                  <div className='signerDetailsAddressPart'>{formattedAddress.substring(0, 5)}</div>
-                  <div className='signerDetailsAddressDivide'>{svg.ellipsis(16)}</div>
-                  <div className='signerDetailsAddressPart'>
-                    {formattedAddress.substr(formattedAddress.length - 3)}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )
-      }
+        </div>
+      )
     }
   }
 
   renderStatus() {
-    const { address, ensName } = this.store('main.accounts', this.props.id)
+    const { address } = this.store('main.accounts', this.props.id)
     const formattedAddress = getAddress(address)
 
     let requests = this.store('main.accounts', this.props.id, 'requests') || {}
@@ -331,11 +293,7 @@ class Account extends React.Component {
       <>
         {!this.state.addressHover ? (
           <div className='signerName'>
-            <div
-              className={!ensName || !this.props.name ? 'signerNameText' : 'signerNameText signerNameTextENS'}
-            >
-              {this.props.name}
-            </div>
+            <div className={'signerNameText'}>{this.props.name}</div>
           </div>
         ) : null}
         <div className={'signerAddress'}>
@@ -349,36 +307,22 @@ class Account extends React.Component {
           >
             <div className='transactionToAddressLargeWrap'>
               {!this.state.addressHover ? (
-                ensName ? (
-                  <div
-                    className='transactionToAddressLarge transactionToAddressENS'
-                    style={{ fontSize: this.getAddressSize() + 'px' }}
-                    onClick={() => {
-                      if (!this.state.addressHover) {
-                        this.setState({ addressHover: true })
-                      }
-                    }}
-                  >
-                    {ensName}
-                  </div>
-                ) : (
-                  <div
-                    className={
-                      this.props.name
-                        ? 'transactionToAddressLarge'
-                        : 'transactionToAddressLarge transactionToAddressENS'
+                <div
+                  className={
+                    this.props.name
+                      ? 'transactionToAddressLarge'
+                      : 'transactionToAddressLarge transactionToAddressENS'
+                  }
+                  onClick={() => {
+                    if (!this.state.addressHover) {
+                      this.setState({ addressHover: true })
                     }
-                    onClick={() => {
-                      if (!this.state.addressHover) {
-                        this.setState({ addressHover: true })
-                      }
-                    }}
-                  >
-                    <div>{formattedAddress.substring(0, 5)}</div>
-                    <div className='transactionToAddressLargeEllipsis'>{svg.ellipsis(16)}</div>
-                    <div>{formattedAddress.substr(formattedAddress.length - 3)}</div>
-                  </div>
-                )
+                  }}
+                >
+                  <div>{formattedAddress.substring(0, 5)}</div>
+                  <div className='transactionToAddressLargeEllipsis'>{svg.ellipsis(16)}</div>
+                  <div>{formattedAddress.substr(formattedAddress.length - 3)}</div>
+                </div>
               ) : null}
             </div>
             <div

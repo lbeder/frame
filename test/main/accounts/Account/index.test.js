@@ -16,14 +16,6 @@ jest.mock('../../../../main/provider', () => ({ on: jest.fn() }))
 jest.mock('../../../../main/accounts', () => ({ RequestMode: { Normal: 'normal' } }))
 jest.mock('../../../../main/signers', () => ({}))
 jest.mock('../../../../main/windows', () => ({}))
-jest.mock('../../../../main/nebula', () => () => ({
-  ready: jest.fn(),
-  once: jest.fn(),
-  ens: {
-    reverseLookup: async () => ['frame.eth']
-  }
-}))
-
 jest.mock('../../../../main/windows/nav', () => ({
   forward: jest.fn()
 }))

@@ -6,14 +6,12 @@ import crypto from 'crypto'
 import tar from 'tar-fs'
 
 import store from '../store'
-import nebulaApi from '../nebula'
 import server from './server'
+import { STATIC_APPS, STATIC_IPFS } from '../externalData/static'
 import extractColors from '../windows/extractColors'
 import { dappPathExists, getDappCacheDir, isDappVerified } from './verify'
 
 import type { Dapp } from '../store/state'
-
-const nebula = nebulaApi()
 
 class DappStream extends Readable {
   constructor(hash: string) {
@@ -21,9 +19,16 @@ class DappStream extends Readable {
     this.start(hash)
   }
   async start(hash: string) {
-    for await (const buf of nebula.ipfs.get(hash, { archive: true })) {
-      this.push(buf)
+    // Check for static dapps first
+    const data = STATIC_IPFS[hash]
+    if (!data) {
+      throw new Error(`Failed to load a static app ${hash}`)
     }
+
+    for (const buf of data) {
+      this.push(Buffer.from(buf, 'base64'))
+    }
+
     this.push(null)
   }
   _read() {
@@ -99,7 +104,13 @@ async function checkStatus(dappId: string) {
   const { checkStatusRetryCount, openWhenReady } = dapp
 
   try {
-    const { record, manifest } = await nebula.resolve(dapp.ens)
+    // Check for static dapps first
+    const fixedDapp = STATIC_APPS[dapp.ens]
+    const { record, manifest } = STATIC_APPS[dapp.ens]
+    if (!record) {
+      throw new Error(`Failed to statically resolve app ${dapp.ens}`)
+    }
+
     const { version, content } = manifest || {}
 
     if (!content) {
@@ -155,11 +166,8 @@ const refreshDapps = ({ statusFilter = '' } = {}) => {
     .filter((id) => !statusFilter || dapps[id].status === statusFilter)
     .forEach((id) => {
       store.updateDapp(id, { status: 'loading' })
-      if (nebula.ready()) {
-        checkStatus(id)
-      } else {
-        nebula.once('ready', () => checkStatus(id))
-      }
+
+      checkStatus(id)
     })
 }
 

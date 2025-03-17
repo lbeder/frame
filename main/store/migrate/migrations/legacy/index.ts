@@ -761,7 +761,6 @@ const migrations = {
           active: false,
           signer: '',
           requests: {},
-          ensName: '',
           created,
           balances: {}
         }

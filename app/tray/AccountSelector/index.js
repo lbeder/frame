@@ -76,8 +76,8 @@ class AccountSelector extends React.Component {
     const sortedAccounts = Object.values(accounts).sort(byCreation)
     const filter = this.store('panel.accountFilter')
 
-    const displayAccounts = sortedAccounts.filter(({ address, name, ensName, lastSignerType }) => {
-      return matchFilter(filter, [address, name, ensName, lastSignerType])
+    const displayAccounts = sortedAccounts.filter(({ address, name, lastSignerType }) => {
+      return matchFilter(filter, [address, name, lastSignerType])
     })
 
     return (

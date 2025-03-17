@@ -1172,7 +1172,6 @@ describe('migration 30', () => {
       active: false,
       signer: '',
       requests: {},
-      ensName: '',
       balances: {}
     })
   })

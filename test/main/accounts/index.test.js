@@ -19,10 +19,6 @@ jest.mock('../../../main/transaction')
 
 jest.mock('../../../main/store/persist')
 
-jest.mock('../../../main/nebula', () =>
-  jest.fn(() => ({ ready: () => true, ens: { lookupAddress: jest.fn() } }))
-)
-
 const account = {
   id: '0x22dd63c3619818fdbc262c78baee43cb61e9cccf',
   name: 'Seed Account',
@@ -31,7 +27,6 @@ const account = {
   status: 'ok',
   signer: '3935336131653838663031303266613139373335616337626261373962343231',
   requests: {},
-  ensName: null,
   tokens: {},
   created: '12819530:1626189153547'
 }
@@ -45,7 +40,6 @@ const account2 = {
   active: false,
   signer: '',
   requests: {},
-  ensName: '',
   created: '15315799:1660153882707'
 }
 

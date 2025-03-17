@@ -48,7 +48,6 @@ interface Account {
   status: AccountStatus
   signer: string
   requests: Record<string, any>
-  ensName: string
   created: string
   balances: {
     lastUpdated?: number

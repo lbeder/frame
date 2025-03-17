@@ -6,11 +6,9 @@ import { addHexPrefix } from '@ethereumjs/util'
 import BigNumber from 'bignumber.js'
 
 import proxyConnection from '../provider/proxy'
-import nebulaApi from '../nebula'
 
 import Erc20Contract from '../contracts/erc20'
 import { decodeCallData, fetchContract, ContractSource } from '../contracts'
-import ensContracts from '../contracts/deployments/ens'
 import erc20 from '../externalData/balances/erc-20-abi'
 import { MAX_HEX } from '../../resources/constants'
 
@@ -22,11 +20,10 @@ import type { Action, DecodableContract, EntityType } from '../transaction/actio
 import type { TransactionRequest } from '../accounts'
 
 // TODO: fix generic typing here
-const knownContracts: DecodableContract<unknown>[] = [...ensContracts]
+const knownContracts: DecodableContract<unknown>[] = []
 
 const erc20Abi = JSON.stringify(erc20)
 
-const nebula = nebulaApi()
 const provider = new EthereumProvider(proxyConnection)
 
 // TODO: Discuss the need to set chain for the proxy connection
@@ -55,16 +52,6 @@ async function resolveEntityType(address: string, chainId: number): Promise<Enti
   } catch (e) {
     log.error(e)
     return 'unknown'
-  }
-}
-
-async function resolveEnsName(address: string): Promise<string> {
-  try {
-    const ensName: string = (await nebula.ens.reverseLookup([address]))[0]
-    return ensName
-  } catch (e) {
-    log.warn(e)
-    return ''
   }
 }
 
@@ -160,20 +147,18 @@ function identifyKnownContractActions(
 
 const surface = {
   identity: async (address = '', chainId?: number) => {
-    // Resolve ens, type and other data about address entities
+    // Resolve type and other data about address entities
 
     const results = await Promise.allSettled([
-      chainId ? resolveEntityType(address, chainId) : Promise.resolve(''),
-      resolveEnsName(address)
+      chainId ? resolveEntityType(address, chainId) : Promise.resolve('')
     ])
 
     const type = results[0].status === 'fulfilled' ? results[0].value : ''
-    const ens = results[1].status === 'fulfilled' ? results[1].value : ''
 
     // TODO: Check the address against various scam dbs
     // TODO: Check the address against user's contact list
     // TODO: Check the address against previously verified contracts
-    return { type, ens }
+    return { type }
   },
   resolveEntityType,
   decode: async (contractAddress = '', chainId: number, calldata: string) => {

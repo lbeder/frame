@@ -77,13 +77,11 @@ const PermitOverview = ({ req, chainData, originName }) => {
                     <ClusterValue pointerEvents={true} onClick={() => copySpender()}>
                       <div className='clusterAddress'>
                         <span className='clusterAddressRecipient'>
-                          {spender.ens || (
-                            <>
-                              {spender.address.substring(0, 8)}
-                              {svg.octicon('kebab-horizontal', { height: 15 })}
-                              {spender.address.substring(spender.address.length - 6)}
-                            </>
-                          )}
+                          <>
+                            {spender.address.substring(0, 8)}
+                            {svg.octicon('kebab-horizontal', { height: 15 })}
+                            {spender.address.substring(spender.address.length - 6)}
+                          </>
                         </span>
                         <div className='clusterAddressRecipientFull'>
                           {showCopiedMessage ? (
