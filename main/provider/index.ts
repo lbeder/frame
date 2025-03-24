@@ -463,11 +463,9 @@ export class Provider extends EventEmitter {
 
     accounts.lockRequest(req.handlerId)
 
-    if (req.data.nonce) {
-      return signOnly(req)
-    }
+    if (req.data.nonce) return signOnly(req)
 
-    this.getLatestNonce(req.data, (response) => {
+    this.getNonce(req.data, (response) => {
       if (response.error) {
         if (this.handlers[req.handlerId]) {
           this.handlers[req.handlerId](response)
@@ -541,19 +539,6 @@ export class Provider extends EventEmitter {
 
     this.connection.send(
       { id: 1, jsonrpc: '2.0', method: 'eth_getTransactionCount', params: [rawTx.from, 'pending'] },
-      res,
-      targetChain
-    )
-  }
-
-  getLatestNonce(rawTx: TransactionData, res: RPCRequestCallback) {
-    const targetChain: Chain = {
-      type: 'ethereum',
-      id: parseInt(rawTx.chainId, 16)
-    }
-
-    this.connection.send(
-      { id: 1, jsonrpc: '2.0', method: 'eth_getTransactionCount', params: [rawTx.from, 'latest'] },
       res,
       targetChain
     )
