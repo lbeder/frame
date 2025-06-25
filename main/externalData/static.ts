@@ -3530,15 +3530,6 @@ export const STATIC_TOKENS: readonly TokenSpec[] = [
     logoURI: 'https://assets.coingecko.com/coins/images/17325/thumb/atc.png?1627311439'
   },
   {
-    chainId: 1,
-    address: '0x7e9c15c43f0d6c4a12e6bdff7c7d55d0f80e3e23',
-    name: 'Astra DAO',
-    symbol: 'ASTRA',
-    decimals: 18,
-    logoURI:
-      'https://assets.coingecko.com/coins/images/27255/thumb/astra200x200px_blue_%282%29.png?1663035884'
-  },
-  {
     chainId: 137,
     address: '0xdfce1e99a31c4597a3f8a8945cbfa9037655e335',
     name: 'Astrafer',
